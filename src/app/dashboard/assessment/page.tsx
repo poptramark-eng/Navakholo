@@ -4,25 +4,41 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function RegionsPage() {
+export default function CreateAssessmentPage() {
   const router = useRouter();
+
+  const currentYear = new Date().getFullYear();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
     setError("");
 
-    const form = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
 
-    const payload = {
-      name: String(form.get("assessment") ?? "").trim(),
-      year: Number(form.get("year")),
-    };
+    const name = String(
+      formData.get("assessment") ?? ""
+    ).trim();
 
-    if (!payload.name || !payload.year) {
-      setError("Please provide an assessment name and year.");
+    const year = Number(formData.get("year"));
+
+    // Client-side validation
+    if (!name) {
+      setError("Please provide an assessment name.");
+      return;
+    }
+
+    if (
+      !Number.isInteger(year) ||
+      year < 2000 ||
+      year > 2100
+    ) {
+      setError("Please provide a valid assessment year.");
       return;
     }
 
@@ -34,23 +50,34 @@ export default function RegionsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name,
+          year,
+        }),
       });
 
       const result: {
         message?: string;
         error?: string;
+        data?: {
+          id: string;
+          name: string;
+          year: number;
+        };
       } = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          result.error || result.message || "Failed to create assessment."
+          result.error ||
+            result.message ||
+            "Failed to create assessment."
         );
       }
 
+      form.reset();
+
       router.push("/");
       router.refresh();
-
     } catch (error) {
       setError(
         error instanceof Error
@@ -64,7 +91,6 @@ export default function RegionsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10 md:px-10">
-
       <div className="mx-auto max-w-2xl">
 
         {/* Page heading */}
@@ -83,7 +109,7 @@ export default function RegionsPage() {
           </p>
         </div>
 
-        {/* Form card */}
+        {/* Assessment form */}
         <form
           onSubmit={handleSubmit}
           className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
@@ -117,6 +143,7 @@ export default function RegionsPage() {
                 id="assessment"
                 name="assessment"
                 required
+                maxLength={150}
                 placeholder="e.g. Term One Assessment"
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -126,7 +153,7 @@ export default function RegionsPage() {
               </p>
             </div>
 
-            {/* Year */}
+            {/* Assessment year */}
             <div className="space-y-2">
               <label
                 htmlFor="year"
@@ -142,6 +169,8 @@ export default function RegionsPage() {
                 required
                 min="2000"
                 max="2100"
+                step="1"
+                defaultValue={currentYear}
                 placeholder="e.g. 2026"
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -151,18 +180,19 @@ export default function RegionsPage() {
               </p>
             </div>
 
-            {/* Error */}
+            {/* Error message */}
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <div
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+              >
                 {error}
               </div>
             )}
-
           </div>
 
           {/* Actions */}
           <div className="flex justify-end border-t border-gray-200 bg-gray-50 px-6 py-4">
-
             <button
               type="submit"
               disabled={loading}
@@ -170,13 +200,9 @@ export default function RegionsPage() {
             >
               {loading ? "Creating..." : "Create Assessment"}
             </button>
-
           </div>
-
         </form>
-
       </div>
-
     </main>
   );
 }

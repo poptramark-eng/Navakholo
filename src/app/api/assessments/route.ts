@@ -1,12 +1,11 @@
-import { NextResponse, NextRequest } from "next/server";
+
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "../../../lib/prisma";
 import { Prisma } from "../../../generated/prisma/client";
-
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-   
 
     const name =
       typeof body.name === "string"
@@ -14,13 +13,26 @@ export async function POST(request: NextRequest) {
         : "";
 
     const year =
+      typeof body.year === "number" ||
       typeof body.year === "string"
-        ? body.year.trim()
-        : "";
- console.log(name, year);
-    if (!name || !year) {
+        ? Number(body.year)
+        : NaN;
+
+    // Validate assessment details
+    if (!name) {
       return NextResponse.json(
-        { error: "Assessment name and year are required" },
+        { error: "Assessment name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      !Number.isInteger(year) ||
+      year < 2000 ||
+      year > 2100
+    ) {
+      return NextResponse.json(
+        { error: "A valid assessment year is required" },
         { status: 400 }
       );
     }
@@ -28,7 +40,7 @@ export async function POST(request: NextRequest) {
     const assessment = await prisma.assessment.create({
       data: {
         name,
-        year:Number(year),
+        year,
       },
     });
 
@@ -40,19 +52,20 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    // Handle duplicate assessment
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
     ) {
-      if (error.code === "P2002") {
-        return NextResponse.json(
-          { error: "An assessment with this name already exists" },
-          { status: 409 }
-        );
-      }
-
-     
+      return NextResponse.json(
+        {
+          error: "An assessment with this name already exists for this year",
+        },
+        { status: 409 }
+      );
     }
 
+    // Handle invalid JSON
     if (error instanceof SyntaxError) {
       return NextResponse.json(
         { error: "Invalid JSON request body" },
@@ -69,28 +82,34 @@ export async function POST(request: NextRequest) {
   }
 }
 
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
     const id = searchParams.get("id");
     const yearParam = searchParams.get("year");
-    const search = searchParams.get("search");
+    const search = searchParams.get("search")?.trim();
 
     let year: number | undefined;
 
+    // Validate year filter
     if (yearParam !== null) {
       year = Number(yearParam);
 
-      if (!Number.isInteger(year)) {
+      if (
+        !yearParam.trim() ||
+        !Number.isInteger(year) ||
+        year < 2000 ||
+        year > 2100
+      ) {
         return NextResponse.json(
-          { error: "Year must be a valid integer" },
+          { error: "Year must be a valid integer between 2000 and 2100" },
           { status: 400 }
         );
       }
     }
 
+    // Fetch a single assessment
     if (id) {
       const assessment = await prisma.assessment.findUnique({
         where: { id },
@@ -110,9 +129,12 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ data: assessment });
+      return NextResponse.json({
+        data: assessment,
+      });
     }
 
+    // Fetch assessments with optional filters
     const assessments = await prisma.assessment.findMany({
       where: {
         ...(year !== undefined ? { year } : {}),
@@ -132,9 +154,14 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        year: "desc",
-      },
+      orderBy: [
+        {
+          year: "desc",
+        },
+        {
+          name: "asc",
+        },
+      ],
     });
 
     return NextResponse.json({
