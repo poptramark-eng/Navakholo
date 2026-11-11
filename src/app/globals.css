@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide the application's main navigation and interactive controls. */
+  nav,
+  aside,
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  main {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  section,
+  .rounded-xl {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

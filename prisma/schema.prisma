@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Users {
+  id       String @id @default(cuid())
+  role     role
+  name     String
+  email    String @unique
+  phone    Int
+  tsc      String @unique
+  password String
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  @@unique([name, schoolId])
+  @@index([schoolId])
+}
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  county    County[]
+}
+
+model County {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  regionId  String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  region    Region      @relation(fields: [regionId], references: [id])
+  subcounty Subcounty[]
+}
+
+model Subcounty {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  countyId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  county    County   @relation(fields: [countyId], references: [id])
+  zone      Zone[]
+
+  @@unique([name, countyId])
+  @@index([countyId])
+}
+
+model Zone {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  subcountyId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  cluster     Cluster[]
+  subcounty   Subcounty @relation(fields: [subcountyId], references: [id])
+}
+
+model Cluster {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  zoneId    String
+  Zone      Zone     @relation(fields: [zoneId], references: [id])
+  schools   School[]
+
+  @@unique([name, zoneId])
+  @@index([zoneId])
+}
+
+model School {
+  id         String          @id @default(cuid())
+  name       String
+  clusterId  String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  candidates ExamCandidate[]
+  cluster    Cluster         @relation(fields: [clusterId], references: [id])
+  users      Users[]
+
+  @@unique([name, clusterId])
+  @@index([clusterId])
+}
+
+model Assessment {
+  id         String          @id @default(cuid())
+  name       String
+  year       Int
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  candidates ExamCandidate[]
+
+  @@index([year])
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  scores    Score[]
+}
+
+model ExamCandidate {
+  id           String     @id @default(cuid())
+  learnerId    String
+  name         String
+  gender       String?
+  grade        GradeLevel
+  assessmentId String
+  schoolId     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  school       School     @relation(fields: [schoolId], references: [id])
+  scores       Score[]
+
+  @@unique([assessmentId, learnerId])
+  @@index([assessmentId, schoolId, grade])
+  @@index([schoolId])
+}
+
+model Score {
+  id          String        @id @default(cuid())
+  candidateId String
+  subjectId   String
+  marks       Decimal       @db.Decimal(7, 2)
+  candidate   ExamCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  subject     Subject       @relation(fields: [subjectId], references: [id])
+
+  @@unique([candidateId, subjectId])
+  @@index([subjectId])
+}
+
+enum role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  PRINCIPAL
+}
+
+enum GradeLevel {
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+  GRADE_5
+  GRADE_6
+  GRADE_7
+  GRADE_8
+  GRADE_9
+}
