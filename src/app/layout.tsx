@@ -9,16 +9,16 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const viewport: Viewport = {
   colorScheme: "light",
-  themeColor: "#15365a",
+  themeColor: "#145c46",
 };
 
 export const metadata: Metadata = {
   title: {
-    default: "Navakholo | Assessment workspace",
+    default: "Navakholo | CBE Assessment Platform",
     template: "%s · Navakholo",
   },
   description:
-    "A connected workspace for competency-based assessment, candidate registration, marks entry and institutional reporting in Navakholo.",
+    "A secure, permission-aware workspace for competency-based assessment operations, candidate registration, marks entry and institutional reporting.",
 };
 
 export default function RootLayout({

@@ -61,7 +61,7 @@ export default function Sidebar({
     <div className="flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground">
       <div className={`flex h-16 shrink-0 items-center border-b border-sidebar-border ${compact ? "justify-center px-2" : "justify-between px-4"}`}>
         <Link href="/" onClick={onNavigate} className="flex min-w-0 items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Navakholo overview">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">N</span>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">C</span>
           {!compact && (
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-semibold tracking-tight">Navakholo</span>
