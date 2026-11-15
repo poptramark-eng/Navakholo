@@ -65,7 +65,7 @@ export default function ProfilePage() {
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          We couldn't retrieve your account information.
+          We couldn&apos;t retrieve your account information.
         </p>
 
         <Link
@@ -207,7 +207,7 @@ export default function ProfilePage() {
           {/* USER ID */}
           <ProfileField
             label="Account ID"
-            value={user.id}
+            value={String(user.id)}
             icon="⌗"
             copyable
           />
@@ -227,7 +227,7 @@ export default function ProfilePage() {
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Your institution's registration details.
+            Your institution&apos;s registration details.
           </p>
         </div>
 

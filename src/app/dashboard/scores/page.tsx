@@ -188,7 +188,7 @@ export default function MarksEntry() {
 
       try {
         const params = new URLSearchParams({
-          schoolId,
+          schoolId: String(schoolId),
           assessmentId,
           grade,
         });
