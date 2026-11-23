@@ -446,11 +446,14 @@ The following remain open for the authorization matrix:
 
 ### Remaining authorization decisions
 
-The following remain open for the authorization matrix:
-- What are the maximum grant duration, renewal and emergency revocation rules?
+**Decision (2026-11-23):** each Council defines the validity duration when it grants an OrganizerAuthority, subject to a configurable maximum duration imposed by platform policy. The grant's effective start and expiry must be stored and enforced for every protected operation. A grant must not remain valid beyond its recorded expiry.
+
+Renewal procedures, advance renewal notifications and emergency revocation procedures remain to be specified.
+
+### Remaining authorization decisions
+
+- What renewal process and notice period should apply before an OrganizerAuthority expires?
+- What emergency revocation procedure and authority should apply?
 - Which other actions, if any, require dual control or additional approval?
 
-**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, and constrained non-transitive organizer staff delegation are accepted. Grant lifecycle and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
-- Which other actions, if any, require dual control or additional approval?
-
-**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, and the distinct Council Approver role are accepted. Grant lifecycle, organizer staff delegation and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, constrained non-transitive organizer staff delegation, and council-defined grant duration subject to a platform maximum are accepted. Renewal and emergency revocation details and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
