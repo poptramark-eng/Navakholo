@@ -110,7 +110,7 @@ Assessment configuration should pin immutable curriculum and rubric versions. Do
 | AssessmentWindow | id, assessmentId, windowType, opensAt, closesAt, status | index (assessmentId, windowType) |
 | AssessmentParticipation | id, assessmentId, schoolRegistrationId, status, invitedAt, acceptedAt, submittedAt | unique (assessmentId, schoolRegistrationId) |
 
-Assessment is tenant-owned by one council in this draft. The organizer must have an active OrganizerAuthority for that council and relevant scope. Cross-council assessment ownership/participation is not approved; do not infer it from multi-council school registration.
+**Accepted rule (2026-11-23): every Assessment belongs to exactly one Council.** The physical model must make `Assessment.councilId` mandatory, non-null and immutable after creation. An assessment is never shared across councils. The organizer must have an active OrganizerAuthority for that same council and relevant scope. A school participates only through its CouncilSchoolRegistration for the assessment's owning council; its registration with another council is irrelevant to this assessment.
 
 ### 3.6 Learners, candidates and marks
 
@@ -195,7 +195,7 @@ Add indexes only after validating real query plans and data volumes. Do not inde
 
 1. Who verifies and controls canonical School names and global identifiers?
 2. Does re-registration after leaving a council reactivate the same registration row or create a new registration episode?
-3. Can an assessment span multiple councils, or must it be owned by exactly one council?
+3. **Resolved:** an assessment belongs to exactly one council. This is not an open question. The remaining question is whether the organizer must be authorized by that council or may be a separate tenant identity with a council grant.
 4. Can an organizer own a separate tenant, or must it be authorized by a council?
 5. What are the exact Council roles and permissions?
 6. What verified identifiers establish Person and TeacherIdentity, and how are duplicates merged?
@@ -222,3 +222,38 @@ Do not create or alter Prisma models until the above decisions are resolved or e
 
 - [Conceptual Domain Model & Logical ERD](https://github.com/poptramark-eng/Navakholo/blob/foundation/domain-model/docs/architecture/conceptual-domain-model.md)
 - Notion: 15 — Conceptual Domain Model & Logical ERD
+
+
+## 10. Accepted council-ownership constraints and Prisma mapping
+
+### Accepted rules
+
+- A physical School may have registrations under multiple Councils.
+- A single Assessment has one and only one owning Council. `Assessment.councilId` is required and identifies its tenant.
+- Assessment ownership is not inferred from participating schools and cannot be changed by adding/removing participation.
+- Each AssessmentParticipation must reference a CouncilSchoolRegistration whose `councilId` equals the parent Assessment's `councilId`.
+
+### Recommended database enforcement
+
+Use composite keys to make cross-council mismatches impossible at the relational layer:
+
+1. `CouncilSchoolRegistration`: retain its primary key and add `@@unique([councilId, id])`.
+2. `Assessment`: add mandatory `councilId` and `@@unique([councilId, id])`.
+3. `AssessmentParticipation`: store `councilId`, `assessmentId`, and `schoolRegistrationId`; create composite foreign keys `[councilId, assessmentId] → Assessment[councilId, id]` and `[councilId, schoolRegistrationId] → CouncilSchoolRegistration[councilId, id]`.
+4. `AssessmentCandidate`: reference the scoped participation using council + assessment + participation identifiers, rather than independently accepting an unrelated school ID.
+5. `Mark`: reference a candidate and an AssessmentLearningArea belonging to the same assessment/council.
+
+Prisma compound relations should be used where the installed Prisma version supports the referenced compound unique keys. Where the exact relation cannot be expressed in Prisma, add a reviewed SQL foreign key in the generated migration and cover it with direct PostgreSQL integration tests. Do not settle for an application-only check for this core invariant.
+
+### Existing repository compatibility findings
+
+The current `prisma/schema.prisma` still models a single-cluster School, an Assessment without council ownership, an ExamCandidate linked directly to School, global Subject/Score records, and a legacy `Users` role enum that includes STUDENT/PARENT/PRINCIPAL. These structures are not yet compatible with the accepted domain model.
+
+No Prisma schema or database migration has been changed in this design increment. Existing assessment ownership, current deployed rows and database migration state must be inspected before backfilling `councilId` or changing the legacy School/Candidate/Score relationships. The repository's existing `.env` history was previously flagged for credential rotation; do not expose or reuse any committed secret.
+
+### Current implementation status
+
+- Conceptual domain documentation updated with both accepted multi-council school registration and single-council assessment ownership.
+- Logical data design documented on this branch.
+- No production database was inspected or changed in this pass. The connected Supabase account returned no projects, so there is no verified Supabase database target to inspect.
+- Redis, Figma and Canva are not required to define the relational model; defer caching and UI design until the database boundaries and workflows are approved.
