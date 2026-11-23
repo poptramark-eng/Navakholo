@@ -257,3 +257,35 @@ No Prisma schema or database migration has been changed in this design increment
 - Logical data design documented on this branch.
 - No production database was inspected or changed in this pass. The connected Supabase account returned no projects, so there is no verified Supabase database target to inspect.
 - Redis, Figma and Canva are not required to define the relational model; defer caching and UI design until the database boundaries and workflows are approved.
+
+
+## 13. Existing assessment data spans multiple councils — confirmed
+
+**Confirmed by product owner (2026-11-23): existing assessments belong to different councils.** Therefore, the legacy data migration must not assign a single default council to all assessments and must not infer assessment ownership from the school alone.
+
+### Required assessment ownership mapping
+
+Before adding a mandatory `Assessment.councilId`:
+
+1. Build an explicit mapping for every existing assessment: `legacyAssessmentId → councilId`.
+2. Obtain the mapping from an authoritative source (for example, existing operational records, assessment setup records outside this schema, or an owner-verified import file).
+3. Validate that every mapped council exists and that no assessment has zero or multiple owners.
+4. For each candidate, resolve the school to the canonical School identity and the CouncilSchoolRegistration under the assessment's mapped council.
+5. Create the corresponding AssessmentParticipation for that assessment + registration pair.
+6. Verify that each candidate's school registration belongs to the same council as the assessment.
+7. Stop migration for any assessment/candidate whose council or registration cannot be determined. Do not guess based on school name, cluster name, assessment title or year.
+
+A temporary staging table/file such as `LegacyAssessmentCouncilMap(legacyAssessmentId, councilCode, verifiedBy, verifiedAt, sourceReference)` can be used to validate the mapping. It is a migration aid, not necessarily a permanent runtime entity. Keep the original assessment IDs stable where possible.
+
+### Important limitation of the current Prisma schema
+
+The current repository schema has no Council model and no `Assessment.councilId`; its Assessment only has name/year/timestamps. Therefore, the current schema cannot itself establish council ownership. The legacy ownership mapping must be sourced and verified before backfill. The current ExamCandidate.schoolId is also insufficient to identify the correct council registration where a school belongs to multiple councils.
+
+### Migration gates
+
+- Zero unmapped assessments.
+- Exactly one verified council owner per assessment.
+- Zero candidate-to-registration council mismatches.
+- Every participation references a registration belonging to its assessment's council.
+- Counts and score totals reconcile before and after migration.
+- Ambiguous rows are quarantined for manual resolution; no destructive cleanup until sign-off.
