@@ -452,8 +452,8 @@ OrganizerAuthority renews automatically for the same council-defined duration, p
 
 ### Remaining authorization decisions
 
-- What advance notice should be given to the Council and Organization before an automatic renewal or expiry?
+- The Council and Organization must receive advance notification 30 days before the OrganizerAuthority's scheduled renewal/expiry. Renewal remains automatic; the notification does not create an approval requirement.
 - What emergency revocation procedure and authority should apply?
 - Which other actions, if any, require dual control or additional approval?
 
-**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, constrained non-transitive organizer staff delegation, council-defined validity duration and automatic renewal subject to a platform maximum are accepted. Notice, emergency revocation details and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, constrained non-transitive organizer staff delegation, council-defined validity duration and automatic renewal subject to a platform maximum are accepted. The 30-day advance notification is accepted; emergency revocation details and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
