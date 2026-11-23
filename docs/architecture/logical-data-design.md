@@ -413,13 +413,23 @@ The sensitive `RELEASE_RESULTS` capability requires approval by a second authori
 
 Other organizer capabilities may be granted, modified or revoked by the Council Administrator under the council's policy. Every grant/change/revocation and approval/rejection must create an immutable audit event, including actor, council, organization, scope, capability changes, timestamp and reason where applicable. A pending result-release grant is not effective until approved. Rejection leaves that capability ungranted. Revocation must take effect immediately for subsequent protected operations; revocation of a grant does not erase historical actions.
 
+### Council Approver role — accepted
+
+**Decision (2026-11-23):** introduce a distinct council-scoped `CouncilApprover` role (or equivalent scoped role assignment) for independent approval of sensitive organizer permissions.
+
+- The Council Administrator may assign and revoke the Council Approver role for an individual with an active membership in that same council.
+- A Council Approver may approve or reject pending requests for the sensitive `RELEASE_RESULTS` capability, subject to the council's approval policy.
+- The approver must be a different person from the grant requester. Self-approval is prohibited, including where one person holds multiple council roles.
+- The Council Approver role grants no automatic assessment creation, assessment management, marks validation, result-release execution, or general organizer-management permissions. It confers only the explicitly defined approval capability.
+- Role assignment, revocation, approval and rejection must be audited. Removing or suspending the approver's active council membership/role removes their ability to approve subsequent requests.
+- The approval service must verify the approver's active council membership, active Council Approver assignment, matching council, pending request state and separation-of-duties rule at decision time.
+
 ### Remaining authorization decisions
 
 The following remain open for the authorization matrix:
-- Which specific council role(s), other than the Council Administrator, are eligible as the independent second approver for `RELEASE_RESULTS`?
 - May authority be granted council-wide, per assessment, or both—and which is the default?
 - What are the maximum grant duration, renewal and emergency revocation rules?
 - Can an organizer delegate any capability to its own staff, and how is that delegation constrained by the council's grant?
 - Which other actions, if any, require dual control or additional approval?
 
-**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, and second-person approval for `RELEASE_RESULTS` are accepted. Exact approver eligibility and remaining grant lifecycle/delegation rules are unresolved. No Prisma schema or database migration was changed or authorized.
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, and the distinct Council Approver role are accepted. Grant lifecycle, organizer staff delegation and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
