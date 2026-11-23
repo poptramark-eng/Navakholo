@@ -78,7 +78,7 @@ erDiagram
 | School | canonical identity | Represents the institution independently of any one council or assessment |
 | CouncilSchoolRegistration | Council + School + Cluster | Registers a canonical school in a council's registry and places it in that council's geography; carries council-specific school code/status and effective dates |
 
-Do not store a single `clusterId` directly on canonical School if a school may be registered with multiple councils or if geography differs by council. The cluster belongs on the council-specific registration.
+**Accepted domain rule (2026-11-23):** one canonical School may hold active or historical registrations with multiple independent Councils. Do not store a single `councilId` or `clusterId` directly on canonical School. The council-specific geography, code, registration number, status and effective dates belong on each CouncilSchoolRegistration. A registration with Council X grants no access to Council Y's tenant data.
 
 ### 3.3 People, accounts and school staffing
 
@@ -170,7 +170,7 @@ Audit events should cover account and membership changes, school approval, asses
 | Rule | Proposed constraint |
 |---|---|
 | Geography | Unique name/code within the correct parent and council |
-| School registry | Unique `(councilId, schoolId)` and unique council-issued school code |
+| School registry | Unique `(councilId, schoolId)` and unique `(councilId, councilSchoolCode)`; one canonical school may have registrations in multiple councils |
 | Teacher identity | Unique verified identifier per issuing authority; never unique by name alone |
 | Membership | Unique active membership for `(schoolRegistrationId, personId)` unless reactivation/history policy says otherwise |
 | Assessment | Unique assessment reference within its owning council/organizer scope |
@@ -212,7 +212,7 @@ These are candidate states only. They need process-owner validation before imple
 
 ## 7. Decisions still open — do not silently assume
 
-1. Can one canonical school register with more than one council? If yes, which organization controls canonical school name and identifiers?
+1. Which organization verifies and controls canonical school name and global identifiers, and how are duplicate canonical School records reconciled?
 2. Can an independent organizer run an assessment across schools belonging to multiple councils? If yes, what tenant owns the assessment and what cross-tenant data-sharing contract applies?
 3. Is every organizer explicitly authorized by a council, or can it own a separate tenant?
 4. Are councils allowed to manage their own user accounts, or are council-level roles different from platform operators?
