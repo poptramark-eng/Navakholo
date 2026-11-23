@@ -113,14 +113,21 @@ The current Prisma schema includes geography, schools, users, assessments, subje
 The existing schema should therefore not be extended with an unreviewed one-shot migration. First produce a logical ERD, data dictionary, ownership matrix and migration plan. Preserve working application behavior while changes are staged.
 
 ## 9. Decisions still requiring validation
-1. Whether schools can be registered with more than one council and what the canonical school authority is.
-2. Whether organisers are always councils or may be independent organisations.
-3. The Council Administrator is authorized to create assessments for their own council, subject to an active Council Administrator membership. Other platform-admin, school-admin and organiser permissions remain to be specified.
-4. Whether the initial school administrator is represented as a pending user, invitation or provisional membership.
-5. Exact assessment approval/release transitions and separation of approval from publication.
-6. Learner identifier format, issuer, correction and merge procedure.
-7. Applicable privacy law, retention, data residency and deletion obligations.
+
+The following remain open and must not be silently assumed:
+
+1. Canonical school identity authority, global identifiers and duplicate-school reconciliation.
+2. Whether a school that leaves and later rejoins a council reactivates its existing CouncilSchoolRegistration or receives a new historical registration episode.
+3. Whether the initial School Administrator is represented as a pending user, invitation or provisional membership.
+4. Exact assessment approval/release transitions, including internal versus external workflows and separation of approval from publication.
+5. Verified identifier(s) for global TeacherIdentity and the duplicate-resolution process.
+6. Authoritative learner identifier issuer, correction/merge process and whether multiple candidate entries per learner are allowed for papers/sessions.
+7. Applicable privacy obligations, retention schedule, lawful disposal, data residency and export policy. Ordinary permanent deletion of assessment evidence and audit history is prohibited; any lawful disposal exception requires a separately governed policy.
 8. Expected scale, availability, offline requirements and external integrations.
+9. Detailed workflow, eligible approver roles and impact controls for any exceptional assessment ownership transfer. No transfer capability is authorized.
+10. Consolidated-report schema, permitted aggregation thresholds, approved recipient model, report retention and exact audit event fields. The authorization boundary itself is accepted: every affected Council must explicitly authorize the report.
+
+Resolved decisions are recorded in Sections 2, 5, 6 and 11 and in the conceptual/logical design documents. Do not re-open them as unresolved questions without a new product-owner decision.
 
 ## 10. Implementation sequence
 1. Confirm domain terminology, actors and ownership.
@@ -137,23 +144,44 @@ The existing schema should therefore not be extended with an unreviewed one-shot
 - Notion: 04 — System Architecture, Domain, Data & API Design.
 - Notion: 14 — Domain Modelling & Database Design.
 
-## 11. Organizer authority and cross-council coordination — accepted
+## 11. Organizer authority and cross-council coordination — accepted (2026-11-23)
 
-**Decision (2026-11-23):** an independent organizer may coordinate a common examination involving schools registered under multiple councils, but the organizer must coordinate separate assessments—one assessment owned by each participating council. A single assessment must never span multiple council tenants.
+An independent organizer may coordinate an examination involving schools registered under multiple Councils only by coordinating separate assessments—one assessment owned by each participating Council. Every Assessment has exactly one immutable owning Council. Participation, candidates, marks, submissions, approvals and result releases remain council-specific. A shared/multi-council Assessment is not permitted.
 
-Each Council grants organizer authority independently. A grant from Council A provides no authority or data access under Council B. The organizer is a delegated actor, not the tenant owner.
+### Council-scoped OrganizerAuthority
 
-Organizer authority must be explicit, council-scoped, purpose-scoped, status-controlled, time-bounded where appropriate, auditable and revocable. It must identify the organization, granting council, permitted assessment(s) or scope, permissions, validity period, grantor and status. Access is denied when the grant is inactive, expired, revoked or outside its scope.
+Each Council independently grants an OrganizerAuthority to an Organization. Council A's grant confers no access or authority under Council B. The organizer is a delegated actor, not a tenant owner. Grants may be assessment-specific (the default) or council-wide (only when explicitly selected), and must define permitted capabilities, status and validity interval.
 
-Candidate permission categories for the authorization matrix are:
-- create/coordinate assessments under the council's authority;
+A Council Administrator with active membership may grant, modify and revoke authority only for their own Council. The independently assignable capability dimensions are:
+- create/coordinate assessments;
 - manage invitations and participating schools;
-- view and manage candidate/participation records within authorized assessments;
-- validate submissions and marks, including resolving validation issues;
-- release results, only where that permission is explicitly granted and consistent with the council's workflow policy.
+- manage candidate and participation records;
+- validate submissions and marks and resolve validation issues;
+- release results.
 
-These are separately grantable capabilities, not an automatic bundle. In particular, result release must not be implied by assessment coordination or marks validation. Council-level grant policy, approver eligibility, delegation/expiry rules and exact permission combinations remain to be specified.
+Every protected operation—including background jobs, exports, downloads and staff actions—must re-check the active parent grant, its Council, scope, capability and validity. Client-supplied tenant IDs or stale tokens are not authorization.
 
-A cross-council consolidated report may be produced only through a separately authorized reporting process. It is a derived report and does not merge assessments, candidates, marks, result releases or tenant ownership.
+### Independent approval and staff delegation
 
-This decision supersedes the earlier open question about whether one organizer may run one assessment spanning multiple councils. No Prisma schema or database migration is authorized by this documentation update.
+Granting or changing RELEASE_RESULTS requires initiation by a Council Administrator and approval by a distinct active Council Approver for that same Council. Self-approval is prohibited even if one person holds multiple roles. Pending changes are ineffective until approved. Capability reductions/revocations remain immediately executable by an authorized Council Administrator. Council Approver conveys approval authority only; it does not itself authorize assessment management or result-release execution.
+
+An authorized Organization may assign named, individually authenticated staff to act within the parent OrganizerAuthority. Each staff member's effective permissions are the intersection of parent-granted capabilities and explicitly assigned staff capabilities. Staff cannot further delegate. Parent suspension, expiry or revocation and staff-assignment revocation immediately block subsequent protected operations. Audit records identify the actual staff actor and effective scope.
+
+### Duration, renewal, notifications and emergency revocation
+
+Each Council chooses the grant duration, subject to a platform-configured maximum. OrganizerAuthority renews automatically for the same council-defined duration, subject to the maximum and continued eligibility. Renewal periods and effective dates are audited. The Council and Organization receive advance notification 30 days before scheduled renewal/expiry; notification does not create an approval step.
+
+A Council Administrator may immediately suspend or revoke an OrganizerAuthority for their own Council during an emergency without second approval. A reason is required and an immutable audit event records actor, Council, Organization, scope, action, timestamp and reason. Dependent staff permissions are disabled immediately.
+
+### Sensitive records and ownership safeguards
+
+- Permanently deleting assessment records, participation, candidates, marks, submissions, approvals, releases or audit history is prohibited. Use archival, status transitions and correction/supersession while preserving original records and immutable audit history. Any lawful-disposal exception requires a separately governed policy.
+- Assessment.councilId is immutable in normal operations. Any exceptional transfer would require a separately designed process, explicit authorization from every affected Council, independent approval by authorized officials, impact/reconciliation review and immutable audit records. No transfer capability is currently authorized.
+
+### Cross-council consolidated reporting
+
+A consolidated report is a separate, derived reporting operation; it never merges assessments or underlying tenant-owned records. Every Council whose data is included must explicitly authorize the report. Each authorization is limited to the stated purpose, approved fields, recipients and validity period. Identifiable learner/candidate-level data is excluded by default; including it requires explicit authorization from every affected Council. Report creation, access, export and download must be scoped and audited. One Council's authorization cannot authorize another Council's data.
+
+### Remaining design work
+
+The authorization matrix, detailed report schema/aggregation safeguards, exact report-recipient controls, exceptional transfer workflow (if ever needed), privacy/retention schedule and full workflow state machines remain to be completed. No Prisma schema change, migration or transfer capability is authorized by this decision.
