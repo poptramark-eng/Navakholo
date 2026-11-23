@@ -349,3 +349,25 @@ The assessment ownership backfill remains blocked until all of the following hol
 7. The owner approves the mapping register and the dry-run reconciliation report.
 
 **Current status:** the hybrid evidence + manual verification approach is accepted. The actual authoritative source locations, manual verifier(s), assessment inventory and mapping values are still unknown. No database was inspected or modified, and no migration is authorized by this decision.
+
+
+## 15. Assessment creation and ownership authority — accepted
+
+**Decision (2026-11-23): councils create their own assessments.** The Council is both the creator-side authority and the permanent tenant owner of each assessment.
+
+### Creation invariant
+
+1. An authenticated user must have an active permission to create assessments for the selected Council.
+2. The server derives Assessment.councilId from the verified council membership / active council context. A client-supplied council ID is only a requested context and must be checked against that authority; it is never trusted as authorization.
+3. The assessment is created with that mandatory councilId in the same transaction as its initial audit event.
+4. The owning councilId is immutable after creation. A transfer, if ever required, must be a separately designed, explicitly authorized and fully audited business process; it must not be implemented as an ordinary update.
+5. Every participating school must have an eligible CouncilSchoolRegistration under that same council.
+6. An external organizer, where used, is a delegated actor operating under the council's explicit authority. Organizer assignment does not make the organizer the tenant owner and does not change assessment ownership.
+
+### Effect on legacy migration
+
+For newly created assessments, the creator's verified council context provides the authoritative ownership value. For legacy assessments, the current schema has no creator-council relationship or Assessment.councilId; do not assume the present createdAt, name, school, or creator account alone proves ownership. Continue to map historical assessments using authoritative historical council records and manual verification where necessary.
+
+### Status
+
+The business rule that councils create and own their assessments is accepted. The exact council role/permission allowed to create assessments remains part of the authorization matrix and must be specified before implementation. No Prisma schema or database migration was changed by this documentation update.
