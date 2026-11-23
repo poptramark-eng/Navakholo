@@ -115,7 +115,7 @@ The existing schema should therefore not be extended with an unreviewed one-shot
 ## 9. Decisions still requiring validation
 1. Whether schools can be registered with more than one council and what the canonical school authority is.
 2. Whether organisers are always councils or may be independent organisations.
-3. Exact platform-admin, council-admin, school-admin and organiser permissions.
+3. The Council Administrator is authorized to create assessments for their own council, subject to an active Council Administrator membership. Other platform-admin, school-admin and organiser permissions remain to be specified.
 4. Whether the initial school administrator is represented as a pending user, invitation or provisional membership.
 5. Exact assessment approval/release transitions and separation of approval from publication.
 6. Learner identifier format, issuer, correction and merge procedure.
