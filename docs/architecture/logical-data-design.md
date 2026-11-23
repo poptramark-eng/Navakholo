@@ -371,3 +371,48 @@ For newly created assessments, the creator's verified council context provides t
 ### Status
 
 The business rule that councils create and own their assessments is accepted. **A Council Administrator with an active Council Administrator membership for that council is authorized to create its assessments.** The permission is council-scoped: the administrator cannot create assessments for another council without a separate active Council Administrator membership there. The server must verify the active membership and derive the owning council from the authorized context; a client-supplied council ID is not proof of authority. Other council permissions and any finer-grained delegation remain part of the authorization matrix. No Prisma schema or database migration was changed by this documentation update.
+
+
+## 16. Organizer authority and cross-council coordination — accepted (2026-11-23)
+
+### Accepted business rule
+
+An independent organizer may coordinate an examination involving schools registered under multiple councils, but the organizer coordinates separate assessments—one per council. Each Assessment has exactly one owning Council. There is no shared/multi-council Assessment aggregate.
+
+For each participating Council, the organizer must hold an independently granted, active OrganizerAuthority. An authority record for Council A never authorizes operations or data access for Council B. Organizer assignment is delegation only; it does not transfer tenant ownership.
+
+### Logical authorization requirements
+
+OrganizerAuthority must capture at least:
+- the granting `councilId`;
+- the authorized `organizationId`;
+- the scope of the grant (assessment-specific or a council-defined bounded scope);
+- the independently assigned permissions/capabilities;
+- status and validity interval;
+- the granting actor and grant timestamp;
+- revocation actor, timestamp and reason where revoked.
+
+Candidate capability dimensions, to be finalized in the authorization matrix:
+1. create/coordinate assessments;
+2. manage invitations and participating schools;
+3. manage candidate/participation records;
+4. validate submissions and marks and resolve validation issues;
+5. release results.
+
+These capabilities must be independently assignable. Result release must never be inferred from coordination or validation. The service must verify the authority record and the requested capability on every protected operation, including background jobs, exports and downloads. Expired, revoked, inactive or out-of-scope grants deny access.
+
+### Cross-council reporting
+
+A consolidated report spanning separate council assessments may be supported only as a distinct, explicitly authorized reporting operation. Its access policy, approved fields, aggregation/anonymization rules and audit requirements remain to be designed. It must not create cross-council participation links or merge candidate, mark, approval or release records.
+
+### Remaining authorization decisions
+
+The following are intentionally unresolved and must be answered in the authorization matrix:
+- Which council role(s) may grant, change, suspend and revoke OrganizerAuthority?
+- Can a Council Administrator grant all organizer capabilities, or are sensitive capabilities (especially result release) subject to a second approver?
+- May authority be granted council-wide, per assessment, or both—and which is the default?
+- What are the maximum grant duration, renewal and emergency revocation rules?
+- Can an organizer delegate any capability to its own staff, and how is that delegation constrained by the council's grant?
+- Which actions require dual control or additional approval?
+
+**Status:** separate assessments and independent council grants are accepted. The permission dimensions above are candidate capabilities for design, not yet a final grantor/approval policy. No Prisma schema or database migration was changed or authorized.
