@@ -427,7 +427,7 @@ Other organizer capabilities may be granted, modified or revoked by the Council 
 ### Remaining authorization decisions
 
 The following remain open for the authorization matrix:
-- May authority be granted council-wide, per assessment, or both—and which is the default?
+- **Authority scope (accepted 2026-11-23):** councils may grant either assessment-specific or council-wide organizer authority. Assessment-specific authority is the default and is limited to the named assessment. Council-wide authority is optional and must be explicitly selected by the Council Administrator, with its capabilities and validity period defined. Both scopes remain confined to the granting council; neither grants access to another council. Every operation must enforce the grant's scope and capabilities. Council-wide authority does not implicitly include `RELEASE_RESULTS`, which still requires independent Council Approver approval.
 - What are the maximum grant duration, renewal and emergency revocation rules?
 - Can an organizer delegate any capability to its own staff, and how is that delegation constrained by the council's grant?
 - Which other actions, if any, require dual control or additional approval?
