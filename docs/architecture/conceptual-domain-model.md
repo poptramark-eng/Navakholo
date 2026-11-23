@@ -239,3 +239,22 @@ No Prisma schema migration is included in this increment. Before implementation,
 - Notion: 08 — Software Requirements Specification (working draft).
 - Notion: 11 — Business Process & Workflow Specification.
 - Notion: 14 — Domain Modelling & Database Design.
+
+## 16. Organizer authority and cross-council coordination — accepted (2026-11-23)
+
+An independent organizer may coordinate an examination involving schools registered under multiple councils, but must coordinate **separate council-owned assessments**. For example, one organizer may coordinate Assessment A under Council A and Assessment B under Council B. The assessments remain separate aggregates with council-specific participation, candidates, marks, submissions, approvals and result releases.
+
+Each Council independently grants an OrganizerAuthority to the organization. Authority is never inherited across councils. The grant is explicit, council-scoped, purpose/permission-scoped, status-controlled, auditable and revocable; validity dates and the granting actor are recorded. An organizer does not become a tenant owner.
+
+The authorization model must represent permissions independently rather than treating organizer status as unrestricted access. Candidate permission dimensions include:
+- assessment creation/coordination;
+- invitation and participating-school management;
+- candidate/participation management;
+- submission and marks validation, including issue resolution;
+- result release.
+
+These are separate capabilities. Result release is not implied by coordination or validation and is permitted only when explicitly granted and allowed by the council's workflow policy. The exact grantor role, eligible approvers, delegation, duration, revocation procedure and permissible combinations remain open for the authorization matrix.
+
+An optional consolidated report across councils is a separate, explicitly authorized reporting operation. It must not merge the underlying assessments or weaken tenant isolation.
+
+This decision resolves the earlier question about one assessment spanning multiple councils: **not permitted**. No Prisma schema or database migration is authorized by this decision.
