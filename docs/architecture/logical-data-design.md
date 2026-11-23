@@ -370,4 +370,4 @@ For newly created assessments, the creator's verified council context provides t
 
 ### Status
 
-The business rule that councils create and own their assessments is accepted. The exact council role/permission allowed to create assessments remains part of the authorization matrix and must be specified before implementation. No Prisma schema or database migration was changed by this documentation update.
+The business rule that councils create and own their assessments is accepted. **A Council Administrator with an active Council Administrator membership for that council is authorized to create its assessments.** The permission is council-scoped: the administrator cannot create assessments for another council without a separate active Council Administrator membership there. The server must verify the active membership and derive the owning council from the authorized context; a client-supplied council ID is not proof of authority. Other council permissions and any finer-grained delegation remain part of the authorization matrix. No Prisma schema or database migration was changed by this documentation update.
