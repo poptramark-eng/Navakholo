@@ -405,14 +405,21 @@ These capabilities must be independently assignable. Result release must never b
 
 A consolidated report spanning separate council assessments may be supported only as a distinct, explicitly authorized reporting operation. Its access policy, approved fields, aggregation/anonymization rules and audit requirements remain to be designed. It must not create cross-council participation links or merge candidate, mark, approval or release records.
 
+### Accepted grant and approval policy
+
+**Decision (2026-11-23):** the Council Administrator may grant, modify and revoke OrganizerAuthority for their own council. This authority is council-scoped; an administrator acting for Council A cannot grant authority on behalf of Council B without the appropriate active membership and authority there.
+
+The sensitive `RELEASE_RESULTS` capability requires approval by a second authorized council official before it becomes effective. The grantor cannot approve their own request. The second approver must be distinct from the initiating Council Administrator and must hold an active council-scoped role/permission explicitly eligible to approve organizer result-release authority. The precise eligible role title is to be finalized in the authorization matrix; do not assume every council member qualifies.
+
+Other organizer capabilities may be granted, modified or revoked by the Council Administrator under the council's policy. Every grant/change/revocation and approval/rejection must create an immutable audit event, including actor, council, organization, scope, capability changes, timestamp and reason where applicable. A pending result-release grant is not effective until approved. Rejection leaves that capability ungranted. Revocation must take effect immediately for subsequent protected operations; revocation of a grant does not erase historical actions.
+
 ### Remaining authorization decisions
 
-The following are intentionally unresolved and must be answered in the authorization matrix:
-- Which council role(s) may grant, change, suspend and revoke OrganizerAuthority?
-- Can a Council Administrator grant all organizer capabilities, or are sensitive capabilities (especially result release) subject to a second approver?
+The following remain open for the authorization matrix:
+- Which specific council role(s), other than the Council Administrator, are eligible as the independent second approver for `RELEASE_RESULTS`?
 - May authority be granted council-wide, per assessment, or both—and which is the default?
 - What are the maximum grant duration, renewal and emergency revocation rules?
 - Can an organizer delegate any capability to its own staff, and how is that delegation constrained by the council's grant?
-- Which actions require dual control or additional approval?
+- Which other actions, if any, require dual control or additional approval?
 
-**Status:** separate assessments and independent council grants are accepted. The permission dimensions above are candidate capabilities for design, not yet a final grantor/approval policy. No Prisma schema or database migration was changed or authorized.
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, and second-person approval for `RELEASE_RESULTS` are accepted. Exact approver eligibility and remaining grant lifecycle/delegation rules are unresolved. No Prisma schema or database migration was changed or authorized.
