@@ -444,16 +444,16 @@ The following remain open for the authorization matrix:
 - Audit records must identify the actual staff actor, Organization, Council, assessment, effective capabilities and action. Staff assignment, capability changes and revocations must also be audited.
 - Each protected operation must verify the staff member's active organization assignment and effective permissions against the current parent OrganizerAuthority; do not rely on stale tokens or client-supplied scope.
 
+### Organizer authority duration and automatic renewal — accepted
+
+**Decision (2026-11-23):** each Council defines the validity duration when it grants an OrganizerAuthority, subject to a configurable maximum renewal period imposed by platform policy. The grant's effective start and expiry must be stored and enforced for every protected operation.
+
+OrganizerAuthority renews automatically for the same council-defined duration, provided the authority has not been revoked or suspended and remains eligible under platform policy. Each renewed period must not exceed the platform-configured maximum. Renewal must be recorded in the audit history, including the effective period. Automatic renewal does not prevent the Council from modifying, suspending or revoking the authority; revocation and suspension take effect immediately for subsequent protected operations. Dependent organizer staff permissions continue only while the parent authority is active.
+
 ### Remaining authorization decisions
 
-**Decision (2026-11-23):** each Council defines the validity duration when it grants an OrganizerAuthority, subject to a configurable maximum duration imposed by platform policy. The grant's effective start and expiry must be stored and enforced for every protected operation. A grant must not remain valid beyond its recorded expiry.
-
-Renewal procedures, advance renewal notifications and emergency revocation procedures remain to be specified.
-
-### Remaining authorization decisions
-
-- What renewal process and notice period should apply before an OrganizerAuthority expires?
+- What advance notice should be given to the Council and Organization before an automatic renewal or expiry?
 - What emergency revocation procedure and authority should apply?
 - Which other actions, if any, require dual control or additional approval?
 
-**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, constrained non-transitive organizer staff delegation, and council-defined grant duration subject to a platform maximum are accepted. Renewal and emergency revocation details and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, constrained non-transitive organizer staff delegation, council-defined validity duration and automatic renewal subject to a platform maximum are accepted. Notice, emergency revocation details and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
