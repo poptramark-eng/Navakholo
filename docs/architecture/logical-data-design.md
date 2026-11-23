@@ -289,3 +289,63 @@ The current repository schema has no Council model and no `Assessment.councilId`
 - Every participation references a registration belonging to its assessment's council.
 - Counts and score totals reconcile before and after migration.
 - Ambiguous rows are quarantined for manual resolution; no destructive cleanup until sign-off.
+
+
+## 14. Hybrid legacy assessment ownership discovery — accepted approach
+
+**Decision (2026-11-23):** use a combination of existing authoritative records and manual owner verification to establish the council owner of each legacy assessment. This selects the discovery method; it does not yet identify the actual source systems, files or named verifiers.
+
+### 14.1 Two-track evidence workflow
+
+1. Inventory every legacy Assessment row without changing it. Preserve its original ID, name, year and timestamps.
+2. Search available operational records and source files for explicit assessment-to-council ownership evidence. Record the exact source and locator (for example, source system/table and row key, or file name and worksheet/row).
+3. Where authoritative evidence exists, propose the council mapping and retain the evidence reference. A match is not considered verified until it passes the ownership review.
+4. Where evidence is missing, conflicting or non-unique, route the assessment to manual review by an authorized owner. Record the decision and its verifier.
+5. Reconcile the evidence-derived and manually verified mappings into one controlled mapping register.
+6. Validate that every legacy assessment has exactly one verified Council ID before any backfill begins.
+
+Do not treat a candidate's School ID, school name, cluster, assessment title, year, or the presence of a school in a council as proof of assessment ownership. Such fields may help locate records for review, but they are not ownership evidence.
+
+### 14.2 Mapping register / staging structure
+
+A controlled CSV or temporary staging table may contain:
+
+| Field | Purpose |
+|---|---|
+| legacyAssessmentId | Exact primary key of the legacy Assessment row |
+| legacyAssessmentName | Read-only context copied from the source |
+| legacyAssessmentYear | Read-only context copied from the source |
+| evidenceType | Existing authoritative record or manual owner decision |
+| evidenceSource | Source system, table, file or register name |
+| evidenceLocator | Exact row key, record ID, worksheet and row, or document reference |
+| proposedCouncilCode | Suggested council code, if known; not an authorization value |
+| verifiedCouncilId | FK to the canonical Council selected after verification |
+| verificationStatus | UNREVIEWED, EVIDENCE_FOUND, MANUAL_REVIEW_REQUIRED, VERIFIED, CONFLICT or QUARANTINED |
+| verifiedBy | Account/person identifier of the authorized verifier |
+| verifiedAt | Timestamp of verification |
+| verificationNotes | Explanation of decision, conflict resolution or quarantine |
+
+The register must enforce one final verified mapping per legacy assessment. Keep raw evidence and the final decision distinguishable: never overwrite the source evidence with a manual correction. If sources conflict, retain both references and require an explicit resolution record.
+
+### 14.3 Review and reconciliation rules
+
+- Evidence-backed mappings must point to an identifiable authoritative source record.
+- Manual mappings must record who made the ownership decision and when.
+- Conflicting sources require resolution; do not use majority voting or an unapproved heuristic.
+- Unknown council codes, missing councils, duplicate final mappings and unmapped assessments are blocking errors.
+- A proposed council code is not sufficient: the final mapping must resolve to one existing Council primary key.
+- Keep an immutable export of the approved mapping register with the migration run artifacts.
+
+### 14.4 Migration gates
+
+The assessment ownership backfill remains blocked until all of the following hold:
+
+1. Every legacy assessment is present in the inventory.
+2. Every assessment has exactly one final mapping to an existing Council.
+3. Every mapping is VERIFIED and has a source reference or manual verifier record.
+4. No assessment has a conflicting or quarantined final mapping.
+5. Candidate-to-school resolution is reviewed independently against the selected council's CouncilSchoolRegistration; school ownership must not be inferred from assessment ownership.
+6. Candidate counts, participation counts and score totals reconcile before and after a dry run.
+7. The owner approves the mapping register and the dry-run reconciliation report.
+
+**Current status:** the hybrid evidence + manual verification approach is accepted. The actual authoritative source locations, manual verifier(s), assessment inventory and mapping values are still unknown. No database was inspected or modified, and no migration is authorized by this decision.
