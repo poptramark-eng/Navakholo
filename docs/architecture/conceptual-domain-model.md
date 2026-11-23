@@ -13,7 +13,7 @@ This model separates four concepts that the current implementation tends to comb
 3. **Scoped relationships:** SchoolCouncilRegistration, SchoolMembership, StaffAssignment and AssessmentParticipation express where and how an identity is associated.
 4. **Assessment workflow:** candidates, marks, submissions, validation, approval and release belong to a particular assessment and its participating schools.
 
-An independent examination organiser is represented as an Organization. An OrganizerAuthority relationship records which council permits that organization to organize an assessment within the council's tenant boundary. Whether organisers may operate independently across multiple councils without a sponsoring council remains an open business decision.
+An independent examination organiser is represented as an Organization. Each Council independently grants an OrganizerAuthority to the Organization. An organizer may coordinate an examination involving multiple Councils only through separate assessments—one per Council—with an active, explicitly scoped authority from each Council. No shared multi-council Assessment is permitted; organizer delegation does not change assessment ownership.
 
 ## 2. Conceptual ERD
 
@@ -119,7 +119,7 @@ An assessment must snapshot or reference immutable curriculum and rubric version
 | AssessmentWindow | Assessment + window type | Candidate registration, mark entry, correction and submission deadlines |
 | AssessmentParticipation | Assessment + CouncilSchoolRegistration | A school's participation in a particular assessment, with invitation/acceptance/status |
 
-School identity is not copied for every assessment. The assessment joins to a council-specific school registration through AssessmentParticipation. This also ensures an assessment only includes schools registered in the relevant council unless a separately approved cross-council participation rule exists.
+School identity is not copied for every assessment. The assessment joins to a council-specific school registration through AssessmentParticipation. This ensures that every participating school is registered under the same Council that owns the Assessment. Cross-council coordination uses separate assessments and each school's registration under the relevant assessment-owning Council; there is no cross-council participation link.
 
 ### 3.6 Learners, candidates and marks
 
