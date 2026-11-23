@@ -193,18 +193,22 @@ Add indexes only after validating real query plans and data volumes. Do not inde
 
 ## 7. Decisions required before physical Prisma schema
 
-1. Who verifies and controls canonical School names and global identifiers?
-2. Does re-registration after leaving a council reactivate the same registration row or create a new registration episode?
-3. **Resolved:** an assessment belongs to exactly one council. This is not an open question. The remaining question is whether the organizer must be authorized by that council or may be a separate tenant identity with a council grant.
-4. Can an organizer own a separate tenant, or must it be authorized by a council?
-5. What are the exact Council roles and permissions?
-6. What verified identifiers establish Person and TeacherIdentity, and how are duplicates merged?
-7. What is the authoritative learner identifier issuer and duplicate-correction process?
-8. Can a learner appear more than once in one assessment for multiple papers/sessions?
-9. Which learning areas are canonical/shared versus council-configured?
-10. What is the complete mark correction and approval policy, including post-release corrections?
-11. What exact state transitions and authorities apply to internal versus external assessments?
-12. What are the retention, privacy, archival, export and deletion requirements?
+The following product rules are already accepted and must not be treated as unresolved: multi-council school registration; one immutable owning Council per Assessment; independent council-scoped OrganizerAuthority; assessment-specific default/council-wide optional scope; Council Administrator grant/change/revoke within own Council; distinct Council Approver approval for granting/changing RELEASE_RESULTS; constrained organizer staff delegation; council-defined grant duration, automatic renewal, platform maximum and 30-day notice; immediate emergency suspension/revocation; no ordinary permanent deletion; exceptional ownership transfer disabled pending a separate process; and cross-council reporting requiring explicit authorization from every affected Council.
+
+Still required before Prisma design approval:
+
+1. Canonical School identity authority and global identifiers.
+2. Re-registration lifecycle/history policy.
+3. Full Council and platform role/permission matrix beyond the accepted organizer controls.
+4. Verified Person/TeacherIdentity identifiers and duplicate-resolution rules.
+5. Learner identifier issuer, correction process and multiple papers/sessions/candidate uniqueness.
+6. Canonical versus council-owned learning areas.
+7. Mark correction and post-release approval policy.
+8. Exact internal/external assessment workflow states and authorities.
+9. Report schema, aggregation/anonymization thresholds, recipient controls and retention.
+10. Privacy obligations, retention schedule and any lawful-disposal exceptions.
+11. Detailed exceptional ownership-transfer process, if ever needed; no transfer capability is authorized.
+12. Remaining identity, lifecycle, operational and scale decisions identified in the conceptual model.
 
 ## 8. Exit criteria for Prisma implementation
 
@@ -401,15 +405,19 @@ Candidate capability dimensions, to be finalized in the authorization matrix:
 
 These capabilities must be independently assignable. Result release must never be inferred from coordination or validation. The service must verify the authority record and the requested capability on every protected operation, including background jobs, exports and downloads. Expired, revoked, inactive or out-of-scope grants deny access.
 
-### Cross-council reporting
+### Cross-council consolidated reporting — authorization rule accepted
 
-A consolidated report spanning separate council assessments may be supported only as a distinct, explicitly authorized reporting operation. Its access policy, approved fields, aggregation/anonymization rules and audit requirements remain to be designed. It must not create cross-council participation links or merge candidate, mark, approval or release records.
+A consolidated report spanning separate council assessments is a distinct derived reporting operation. It does not create cross-council participation links or merge assessments, candidates, marks, approvals or releases.
+
+Every Council whose data is included must explicitly authorize the report. Each authorization is limited to the stated purpose, approved fields, recipients and validity period. Identifiable learner/candidate-level data is excluded by default; including it requires explicit authorization from every affected Council. Report creation, access, export and download must be scoped and audited. One Council's authorization cannot authorize another Council's data.
+
+The detailed report schema, aggregation/anonymization thresholds, recipient controls and retention remain to be designed.
 
 ### Accepted grant and approval policy
 
 **Decision (2026-11-23):** the Council Administrator may grant, modify and revoke OrganizerAuthority for their own council. This authority is council-scoped; an administrator acting for Council A cannot grant authority on behalf of Council B without the appropriate active membership and authority there.
 
-The sensitive `RELEASE_RESULTS` capability requires approval by a second authorized council official before it becomes effective. The grantor cannot approve their own request. The second approver must be distinct from the initiating Council Administrator and must hold an active council-scoped role/permission explicitly eligible to approve organizer result-release authority. The precise eligible role title is to be finalized in the authorization matrix; do not assume every council member qualifies.
+The sensitive `RELEASE_RESULTS` capability requires approval by a second authorized council official before it becomes effective. The grantor cannot approve their own request. The second approver must be distinct from the initiating Council Administrator and must hold an active council-scoped role/permission explicitly eligible to approve organizer result-release authority. The distinct Council Approver role is the accepted eligible role for this approval.
 
 Other organizer capabilities may be granted, modified or revoked by the Council Administrator under the council's policy. Every grant/change/revocation and approval/rejection must create an immutable audit event, including actor, council, organization, scope, capability changes, timestamp and reason where applicable. A pending result-release grant is not effective until approved. Rejection leaves that capability ungranted. Revocation must take effect immediately for subsequent protected operations; revocation of a grant does not erase historical actions.
 
@@ -424,11 +432,10 @@ Other organizer capabilities may be granted, modified or revoked by the Council 
 - Role assignment, revocation, approval and rejection must be audited. Removing or suspending the approver's active council membership/role removes their ability to approve subsequent requests.
 - The approval service must verify the approver's active council membership, active Council Approver assignment, matching council, pending request state and separation-of-duties rule at decision time.
 
-### Remaining authorization decisions
+### Authority scope — accepted
 
-The following remain open for the authorization matrix:
-- **Authority scope (accepted 2026-11-23):** councils may grant either assessment-specific or council-wide organizer authority. Assessment-specific authority is the default and is limited to the named assessment. Council-wide authority is optional and must be explicitly selected by the Council Administrator, with its capabilities and validity period defined. Both scopes remain confined to the granting council; neither grants access to another council. Every operation must enforce the grant's scope and capabilities. Council-wide authority does not implicitly include `RELEASE_RESULTS`, which still requires independent Council Approver approval.
-- What are the maximum grant duration, renewal and emergency revocation rules?
+Councils may grant either assessment-specific or council-wide OrganizerAuthority. Assessment-specific authority is the default and is limited to the explicitly named assessment. Council-wide authority is optional and must be explicitly selected by the Council Administrator, with capabilities and validity period defined. Both scopes are confined to the granting Council. Council-wide scope never implies RELEASE_RESULTS; that capability still requires independent Council Approver approval.
+
 ### Organizer staff delegation — accepted
 
 **Decision (2026-11-23):** an authorized Organization may delegate permitted operational work to named, individually authenticated organizer staff members, subject to the following controls.
@@ -450,14 +457,16 @@ The following remain open for the authorization matrix:
 
 OrganizerAuthority renews automatically for the same council-defined duration, provided the authority has not been revoked or suspended and remains eligible under platform policy. Each renewed period must not exceed the platform-configured maximum. Renewal must be recorded in the audit history, including the effective period. Automatic renewal does not prevent the Council from modifying, suspending or revoking the authority; revocation and suspension take effect immediately for subsequent protected operations. Dependent organizer staff permissions continue only while the parent authority is active.
 
+The Council and Organization must receive advance notification 30 days before scheduled renewal/expiry. Renewal remains automatic and notification does not create an approval requirement.
+
+### Emergency suspension and revocation — accepted
+
+During an emergency, a Council Administrator may immediately suspend or revoke an OrganizerAuthority for their own Council without second approval. A reason is required and an immutable audit event records the actor, Council, Organization, scope, action, timestamp and reason. Suspension/revocation immediately blocks subsequent protected operations and disables all dependent organizer staff permissions.
+
 ### Additional dual-control, retention and ownership safeguards — accepted
 
-**Decision (2026-11-23):** adopt the following controls for sensitive operations.
+- **Granting or changing RELEASE_RESULTS:** a Council Administrator initiates the grant or capability-change request, and a distinct active Council Approver for that same Council must approve it before the requested capability becomes effective. The requester cannot approve their own request, including where one person holds multiple roles. Pending changes do not expand effective permissions. Capability reductions and revocations remain immediately executable by an authorized Council Administrator; emergency suspension/revocation must not be delayed by approval.
+- **Permanent deletion:** permanently deleting assessment records, participation records, candidates, marks, submissions, approvals, result releases or their audit history is prohibited. Use archival, status transitions or correction/supersession workflows while preserving original records and immutable audit history. Any retention or lawful-disposal exception must be handled through a separately governed policy, not ordinary application deletion.
+- **Exceptional assessment ownership transfer:** Assessment.councilId remains immutable during normal operations. Transfer cannot be an ordinary update or routine administrator action. If genuinely required, it must use a separately designed process with explicit authorization from every affected Council, independent approval by authorized officials, full impact/reconciliation review and immutable audit records. The detailed transfer workflow and eligible approver roles remain to be designed; no transfer capability is authorized.
 
-- **Granting or changing `RELEASE_RESULTS`:** a Council Administrator initiates the grant or capability-change request, and a distinct active Council Approver for that same Council must approve it before the requested capability becomes effective. The requester cannot approve their own request, including where one person holds multiple roles. Pending changes do not expand effective permissions. Capability reductions and revocations remain immediately executable by an authorized Council Administrator; emergency suspension/revocation must not be delayed by approval.
-- **Permanent deletion:** permanently deleting assessment records, participation records, candidates, marks, submissions, approvals, result releases or their audit history is prohibited. Use archival, status transitions or correction/supersession workflows while preserving the original records and immutable audit history. Retention and lawful-disposal requirements, if any, must be addressed through a separately governed policy; they must not be implemented as ordinary application deletion.
-- **Exceptional assessment ownership transfer:** `Assessment.councilId` remains immutable during normal operations. A transfer cannot be performed through an ordinary update or routine administrator action. If a genuine exceptional transfer is ever required, it must use a separately designed process with explicit authorization from the affected councils, independent approval by authorized officials, full impact/reconciliation review and immutable audit records. The detailed transfer workflow and eligible approver roles remain to be designed; no transfer capability is authorized by this decision.
-
-These controls supplement the previously accepted second-person approval for `RELEASE_RESULTS` grants, the distinct Council Approver role, council-scoped emergency suspension/revocation, automatic OrganizerAuthority renewal and 30-day advance notifications.
-
-**Status:** the additional dual-control and retention safeguards above are accepted. No Prisma schema or database migration was changed or authorized.
+**Status:** all organizer authority lifecycle, reporting authorization and sensitive-operation safeguards described in this section are accepted. Detailed authorization/reporting/retention designs remain open. No Prisma schema or database migration was changed or authorized.
