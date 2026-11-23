@@ -136,3 +136,24 @@ The existing schema should therefore not be extended with an unreviewed one-shot
 - Notion: CBE Engineering Workspace — project baseline and lifecycle.
 - Notion: 04 — System Architecture, Domain, Data & API Design.
 - Notion: 14 — Domain Modelling & Database Design.
+
+## 11. Organizer authority and cross-council coordination — accepted
+
+**Decision (2026-11-23):** an independent organizer may coordinate a common examination involving schools registered under multiple councils, but the organizer must coordinate separate assessments—one assessment owned by each participating council. A single assessment must never span multiple council tenants.
+
+Each Council grants organizer authority independently. A grant from Council A provides no authority or data access under Council B. The organizer is a delegated actor, not the tenant owner.
+
+Organizer authority must be explicit, council-scoped, purpose-scoped, status-controlled, time-bounded where appropriate, auditable and revocable. It must identify the organization, granting council, permitted assessment(s) or scope, permissions, validity period, grantor and status. Access is denied when the grant is inactive, expired, revoked or outside its scope.
+
+Candidate permission categories for the authorization matrix are:
+- create/coordinate assessments under the council's authority;
+- manage invitations and participating schools;
+- view and manage candidate/participation records within authorized assessments;
+- validate submissions and marks, including resolving validation issues;
+- release results, only where that permission is explicitly granted and consistent with the council's workflow policy.
+
+These are separately grantable capabilities, not an automatic bundle. In particular, result release must not be implied by assessment coordination or marks validation. Council-level grant policy, approver eligibility, delegation/expiry rules and exact permission combinations remain to be specified.
+
+A cross-council consolidated report may be produced only through a separately authorized reporting process. It is a derived report and does not merge assessments, candidates, marks, result releases or tenant ownership.
+
+This decision supersedes the earlier open question about whether one organizer may run one assessment spanning multiple councils. No Prisma schema or database migration is authorized by this documentation update.
