@@ -80,6 +80,8 @@ erDiagram
 
 **Accepted domain rule (2026-11-23):** one canonical School may hold active or historical registrations with multiple independent Councils. Do not store a single `councilId` or `clusterId` directly on canonical School. The council-specific geography, code, registration number, status and effective dates belong on each CouncilSchoolRegistration. A registration with Council X grants no access to Council Y's tenant data.
 
+**Accepted domain rule (2026-11-23):** every Assessment belongs to exactly one Council. `Assessment.councilId` is mandatory; assessment ownership is not shared or inferred from participating schools. A school participates only through its CouncilSchoolRegistration for that same Council. The logical design uses composite foreign keys to prevent a participation from pairing an assessment owned by one council with a registration owned by another council.
+
 ### 3.3 People, accounts and school staffing
 
 | Entity | Key relationships | Ownership / purpose |
