@@ -429,7 +429,28 @@ Other organizer capabilities may be granted, modified or revoked by the Council 
 The following remain open for the authorization matrix:
 - **Authority scope (accepted 2026-11-23):** councils may grant either assessment-specific or council-wide organizer authority. Assessment-specific authority is the default and is limited to the named assessment. Council-wide authority is optional and must be explicitly selected by the Council Administrator, with its capabilities and validity period defined. Both scopes remain confined to the granting council; neither grants access to another council. Every operation must enforce the grant's scope and capabilities. Council-wide authority does not implicitly include `RELEASE_RESULTS`, which still requires independent Council Approver approval.
 - What are the maximum grant duration, renewal and emergency revocation rules?
-- Can an organizer delegate any capability to its own staff, and how is that delegation constrained by the council's grant?
+### Organizer staff delegation — accepted
+
+**Decision (2026-11-23):** an authorized Organization may delegate permitted operational work to named, individually authenticated organizer staff members, subject to the following controls.
+
+- The Council grants `OrganizerAuthority` to the Organization. The Organization Administrator assigns named staff members to perform work on its behalf.
+- Every staff member uses an individual account; shared organizational credentials are not an acceptable delegation mechanism.
+- A staff member may receive only capabilities that are both included in the Organization's active council grant and explicitly assigned to that staff member.
+- Staff permissions cannot exceed the parent grant's council, assessment scope, capabilities or validity interval. Assessment-specific grants remain limited to their named assessment; council-wide grants remain limited to that council.
+- Staff cannot grant authority to other staff or further delegate their own permissions.
+- Ordinary staff assignment cannot confer `RELEASE_RESULTS`. Any staff member intended to approve a release-authority grant must independently hold an active Council Approver assignment for that council; any staff member intended to execute result release must receive explicit council authorization through a separately defined release permission and approval process. The Council Approver role alone does not grant execution rights.
+- The Organization Administrator may revoke a staff assignment. Revocation immediately blocks subsequent protected operations by that staff member.
+- Suspension, expiry or revocation of the parent OrganizerAuthority disables all dependent staff permissions.
+- Audit records must identify the actual staff actor, Organization, Council, assessment, effective capabilities and action. Staff assignment, capability changes and revocations must also be audited.
+- Each protected operation must verify the staff member's active organization assignment and effective permissions against the current parent OrganizerAuthority; do not rely on stale tokens or client-supplied scope.
+
+### Remaining authorization decisions
+
+The following remain open for the authorization matrix:
+- What are the maximum grant duration, renewal and emergency revocation rules?
+- Which other actions, if any, require dual control or additional approval?
+
+**Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, the distinct Council Approver role, assessment-specific default/council-wide authority scopes, and constrained non-transitive organizer staff delegation are accepted. Grant lifecycle and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
 - Which other actions, if any, require dual control or additional approval?
 
 **Status:** separate assessments, independent council grants, Council Administrator grant/change/revoke authority, second-person approval for `RELEASE_RESULTS`, and the distinct Council Approver role are accepted. Grant lifecycle, organizer staff delegation and any further dual-control actions remain unresolved. No Prisma schema or database migration was changed or authorized.
