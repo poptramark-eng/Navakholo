@@ -185,3 +185,44 @@ A consolidated report is a separate, derived reporting operation; it never merge
 ### Remaining design work
 
 The authorization matrix, detailed report schema/aggregation safeguards, exact report-recipient controls, exceptional transfer workflow (if ever needed), privacy/retention schedule and full workflow state machines remain to be completed. No Prisma schema change, migration or transfer capability is authorized by this decision.
+
+
+## 17. Council governance and independent approvals — accepted (23 November 2026)
+
+### Council-scoped governance roles
+
+- Multiple active Council Administrators are permitted within one Council. Their permissions are Council-scoped; none may act for another Council without active authority there.
+- Introduce a distinct `CouncilGovernanceApprover` role for sensitive Council governance decisions, including Council Administrator appointments, replacements, suspensions and removals. This role is separate from `CouncilApprover`, which is limited to approving/rejecting organizer `RELEASE_RESULTS` authority requests.
+- A CouncilGovernanceApprover receives no automatic assessment-management, organizer-management, organizer-release approval or result-release execution permissions.
+- A person may hold both CouncilAdministrator and CouncilGovernanceApprover roles in the same Council, but role overlap never overrides separation of duties.
+- Each Council must maintain at least one active permanent CouncilGovernanceApprover. The system must flag a Council without one. A temporary appointment covers a vacancy but does not count as permanent coverage.
+
+### Appointment, replacement and recovery
+
+- During Council onboarding, the Platform Administrator designates the initial permanent CouncilGovernanceApprover after independently verifying the Council's authorized representative.
+- A subsequent appointment is initiated by a Council Administrator and approved by an existing active CouncilGovernanceApprover. The requester cannot approve their own request.
+- A Council Administrator may initiate appointment/replacement, suspension or removal of another Council Administrator; an active, eligible CouncilGovernanceApprover must independently approve. The affected administrator cannot approve a decision directly affecting their own administrative authority.
+- One independent approval by a distinct, eligible Governance Approver is the standard approval threshold for these sensitive governance requests. The approver must be active in the same Council, not the requester, not the affected person, and not conflicted.
+- If no permanent Governance Approver remains, the Platform Administrator may restore coverage after independently verifying the Council's authorized representative. The Platform Administrator may appoint a temporary Governance Approver when the permanent approver is unavailable or the position is vacant. A temporary appointment is Council-scoped, has a defined expiry, cannot become permanent automatically, and confers only Governance Approver permissions.
+- In urgent security situations, the Platform Administrator may temporarily suspend a Council Administrator pending the governance process. The action requires a reason, timestamp and audit record and is not permanent removal by itself.
+- Normal operations must retain at least one active Council Administrator. Platform Administrator recovery applies if the Council loses all active administrators.
+
+### Conflict of interest and audit
+
+- A Governance Approver must declare a conflict of interest and recuse themselves from the affected request. A recused approver cannot access or decide that request.
+- Another active, eligible Governance Approver may decide it. If none remains, use the temporary Governance Approver recovery process.
+- Conflict declaration, recusal, appointment, approval, rejection, suspension, revocation and recovery actions are audited. The audit record identifies the actual person, Council, request/action, timestamp, decision and reason where applicable.
+- Separation of duties is checked against the actual individual, not merely role assignments. A person cannot approve a request they initiated or a decision directly affecting their own appointment or administrative authority.
+
+### Council membership and invitations
+
+- A Council Administrator may invite existing platform users into their Council, assign permitted Council-scoped roles, suspend/reactivate memberships and revoke memberships. They cannot create/assign Platform Administrators, grant roles in another Council, self-assign additional privileged roles or bypass independent approval.
+- An invitation to an existing user creates a Council membership, not a duplicate identity. An invitation to a new user is Council-specific; the recipient verifies it and creates a global account before the membership becomes active.
+- Invitations expire and may be revoked. An invitation alone grants no active access. Acceptance, expiry, revocation, membership changes and role changes are audited.
+- Council Administrator appointment/replacement is initiated by an existing Council Administrator and requires independent approval as described above.
+
+### Council school registration administration
+
+A Council Administrator may suspend/reactivate a CouncilSchoolRegistration only within their own Council. This does not deactivate the canonical School or affect its registrations with other Councils. Suspension requires a reason and is audited; it blocks participation in that Council's assessments while suspended. Reactivation restores eligibility subject to other requirements. Permanent deletion is not an ordinary administrative operation. Platform Administrator approval remains required for initial school registration.
+
+**Implementation boundary:** these are accepted governance rules, not approval to modify the Prisma schema or run migrations. Detailed authorization matrix, exact workflow state machines and physical persistence design remain open.
