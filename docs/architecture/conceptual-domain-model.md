@@ -274,3 +274,15 @@ Consolidated reporting is a separate derived reporting operation; it does not me
 ### Remaining work
 
 The detailed authorization matrix, report schema and aggregation thresholds, recipient controls, retention schedule, full assessment workflow state machines and any exceptional transfer process remain to be designed. No Prisma schema change or migration is authorized.
+
+## Council governance and independent approvals — accepted (23 November 2026)
+
+Council governance is scoped to each Council. Multiple active Council Administrators are permitted, and each Council must maintain at least one active permanent CouncilGovernanceApprover. The distinct CouncilGovernanceApprover role handles sensitive governance approvals, including Council Administrator appointments, replacements, suspensions and removals. It is separate from CouncilApprover, which is limited to organizer RELEASE_RESULTS authority approval. Neither role implies general assessment or result-release execution permissions.
+
+During onboarding, the Platform Administrator designates the initial permanent Governance Approver after verifying the Council's authorized representative. Subsequent appointments and sensitive administrator changes are initiated by a Council Administrator and require one independent approval from an eligible, active Governance Approver in the same Council. The approver must be a different individual from the requester and anyone directly affected. Holding multiple roles does not override separation of duties.
+
+A Governance Approver must declare a conflict and recuse themselves from the affected request. A recused approver cannot access or decide that request. Another eligible Governance Approver may decide it; if none remains, the temporary Governance Approver recovery process applies. The Platform Administrator may restore permanent coverage after independently verifying the Council's authorized representative and may appoint a time-limited temporary approver when necessary. Temporary appointments do not become permanent automatically.
+
+Approvals, rejections, appointments, role changes, conflict declarations, recusals, emergency suspensions and recovery actions are audited. The audit identifies the actual individual, Council, request/action, timestamp, decision and reason where applicable. Urgent Platform Administrator suspension of a Council Administrator is temporary pending the governance process and does not itself constitute permanent removal.
+
+**Implementation boundary:** these are accepted conceptual governance rules, not authorization to change the Prisma schema or run migrations. Detailed authorization matrices and workflow state machines remain design work.
